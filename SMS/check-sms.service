@@ -1,0 +1,20 @@
+[Unit]
+Description=Check-SMS.py Service
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=3
+User=pi
+WorkingDirectory=/home/pi/SMS-API
+ExecStart=/usr/bin/python3 /home/pi/SMS-API/check-sms.py
+StandardOutput=append:/home/pi/SMS-API/check-sms.log
+StandardError=append:/home/pi/SMS-API/check-sms.error.log
+
+[Install]
+WantedBy=multi-user.target
+WantedBy=network-online.service
+
+# Create with sudo systemctl edit --force --full check-sms.service

@@ -1,0 +1,10 @@
+HUAWEI_ROUTER_IP_ADDRESS="192.168.8.1"
+HUAWEI_ROUTER_ACCOUNT="admin"
+HUAWEI_ROUTER_PASSWORD="PenguinParty$19"
+GMAIL_ACCOUNT="terry.tikkits@gmail.com"
+GMAIL_PASSWORD="dvcaithhqizywniv"
+MAIL_RECIPIENT=tickets@scribnerd.com,ticketbuys@nrfindustriesllc.com
+DELAY_SECOND=10
+LOCALE="en_US"
+
+
