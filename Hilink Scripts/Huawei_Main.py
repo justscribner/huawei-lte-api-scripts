@@ -56,7 +56,8 @@ def get_signal_int(value):
     return int(value.split('d')[0])
 
 
-class HuaweiMain():
+class HuaweiMain(object):
+
     def set_login(self, ip, login, password):
         self.url = f'http://{ip}/'
         self.login = login
@@ -65,6 +66,7 @@ class HuaweiMain():
     def init_connection(self):
         connection = AuthorizedConnection(self.url, self.login, self.password)
         self.client = Client(connection)
+        self.dialup_status = self.client.dial_up.mobile_dataswitch()
 
     def close_connection(self):
         self.client.user.logout()
@@ -145,57 +147,23 @@ class HuaweiMain():
         except LoginErrorUsernamePasswordWrongException:
             return False
 
+    def toggle_LTE(self):
+        try:
+            self.init_connection()
+            if self.dialup_status == 0:
+                self.close_connection()
+                return self.client.dial_up.set_mobile_dataswitch(1)
+            else:
+                self.close_connection()
+                return self.client.dial_up.set_mobile_dataswitch(0)
 
-#     # Use infinite loop to check SMS
-# while True:
-#     try:
-#         # Establish a connection with authorized
-#         connection = AuthorizedConnection('http://{}:{}@{}/'.format(
-#             HUAWEI_ROUTER_ACCOUNT, HUAWEI_ROUTER_PASSWORD, HUAWEI_ROUTER_IP_ADDRESS))
-#         client = Client(connection)
-#         # Set account phone number to pass on to the sms email
-#         ACCOUNT_PHONE_NUMBER = client.device.information()['Msisdn']
-#         # print(ACCOUNT_PHONE_NUMBER)
-#         # get first SMS(unread priority)
-#         sms = client.sms.get_sms_list(1, BoxTypeEnum.LOCAL_INBOX, 1, 0, 0, 1)
-#         # Skip this loop if the SMS was read
-#         if int(sms['Messages']['Message']['Smstat']) == 1:
-#             # Logout
-#             client.user.logout()
-#             # Inspection interval(second)
-#             time.sleep(DELAY_SECOND)
-#             continue
+        except LoginErrorUsernamePasswordWrongException:
+            return False
 
-#         # Find a new SMS, go send e-mail！
-#         print(_('{Date} Find a new SMS ID:{Message_Index}! from {Phone_Number}').format(
-#             Date=sms['Messages']['Message']['Date'], Message_Index=sms['Messages']['Message']['Index'], Phone_Number=sms['Messages']['Message']['Phone']))
-
-#         # send e-mail
-#         msg = MIMEMultipart()
-#         msg['Subject'] = _('You have a message from {Phone_Number} TO {Account_Phone_Number}').format(
-#             Phone_Number=sms['Messages']['Message']['Phone'], Account_Phone_Number=ACCOUNT_PHONE_NUMBER)
-#         body = _('Message date: {Date}\nAccount Phone Number: {Account_Phone_Num}\nMessage content：\n\n {Content}').format(
-#             Date=sms['Messages']['Message']['Date'], Account_Phone_Num=ACCOUNT_PHONE_NUMBER, Content=sms['Messages']['Message']['Content'])
-#         msg.attach(MIMEText(body, 'plain'))
-
-#         try:
-#             server = smtplib.SMTP('smtp.gmail.com', 587)
-#             server.ehlo()
-#             server.starttls()
-#             server.ehlo()
-#             server.login(GMAIL_ACCOUNT, GMAIL_PASSWORD)
-#             server.sendmail(GMAIL_ACCOUNT, MAIL_RECIPIENT, msg.as_string())
-#             server.quit()
-#             print(_('ID:{Message_Index} from {Phone_Number} was successfully sent!').format(
-#                 Message_Index=sms['Messages']['Message']['Index'], Phone_Number=sms['Messages']['Message']['Phone']))
-#             # Set the SMS status was read
-#             client.sms.set_read(int(sms['Messages']['Message']['Index']))
-#             # Logout
-#             client.user.logout()
-#         except Exception as e:
-#             client.user.logout()
-#             print(_('ID:{Message_Index} from {Phone_Number} failed to send! \nError message:\n{error_msg}').format(
-#                 Message_Index=sms['Messages']['Message']['Index'], Phone_Number=sms['Messages']['Message']['Phone'], error_msg=e))
-#     except Exception as e:
-#         print(_('Router connection failed! Please check the settings. \nError message:\n{error_msg}').format(
-#             error_msg=e))
+    def reboot_modem(self):
+        try:
+            self.init_connection()
+            self.client.device.control(1)
+            self.close_connection()
+        except LoginErrorUsernamePasswordWrongException:
+            return False
