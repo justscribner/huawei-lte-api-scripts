@@ -58,13 +58,10 @@ def get_signal_int(value):
 
 class HuaweiMain(object):
 
-    def set_login(self, ip, login, password):
-        ip = HUAWEI_ROUTER_IP_ADDRESS
-        login = HUAWEI_ROUTER_ACCOUNT
-        password = HUAWEI_ROUTER_PASSWORD
-        self.url = 'http://{HUAWEI_ROUTER_IP_ADDRESS}/'
-        self.login = HUAWEI_ROUTER_ACCOUNT
-        self.password = HUAWEI_ROUTER_PASSWORD
+    def set_login(self, ip=HUAWEI_ROUTER_IP_ADDRESS, login=HUAWEI_ROUTER_ACCOUNT, password=HUAWEI_ROUTER_PASSWORD):
+        self.url = 'http://{ip}/'
+        self.login = login
+        self.password = password
 
     def init_connection(self):
         connection = AuthorizedConnection(self.url, self.login, self.password)
