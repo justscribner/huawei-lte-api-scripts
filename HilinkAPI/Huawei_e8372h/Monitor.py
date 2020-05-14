@@ -30,6 +30,7 @@ except ImportError:
 from dotenv import load_dotenv
 load_dotenv()
 
+from ModemSession import *
 from huawei_lte_api.enums.sms import BoxTypeEnum
 from huawei_lte_api.api.User import User
 from huawei_lte_api.Connection import Connection
@@ -42,44 +43,11 @@ from huawei_lte_api.exceptions import LoginErrorUsernamePasswordWrongException
 from math_bands import convert_bands_hex2list
 
 
-# load environment variable from .env file
-HUAWEI_ROUTER_IP_ADDRESS = os.getenv("HUAWEI_ROUTER_IP_ADDRESS")
-HUAWEI_ROUTER_ACCOUNT = os.getenv("HUAWEI_ROUTER_ACCOUNT")
-HUAWEI_ROUTER_PASSWORD = os.getenv("HUAWEI_ROUTER_PASSWORD")
-GMAIL_ACCOUNT = os.getenv("GMAIL_ACCOUNT")
-GMAIL_PASSWORD = os.getenv("GMAIL_PASSWORD")
-MAIL_RECIPIENT = os.getenv("MAIL_RECIPIENT").split(",")
-DELAY_SECOND = int(os.getenv("DELAY_SECOND"))
-
-
 def get_signal_int(value):
     return int(value.split('d')[0])
 
 
-class HuaweiMain(object):
-
-    def set_login(self, ip=HUAWEI_ROUTER_IP_ADDRESS, login=HUAWEI_ROUTER_ACCOUNT, password=HUAWEI_ROUTER_PASSWORD):
-        self.url = 'http://{ip}/'
-        self.login = login
-        self.password = password
-
-    def init_connection(self):
-        connection = AuthorizedConnection(self.url, self.login, self.password)
-        self.client = Client(connection)
-        self.dialup_status = self.client.dial_up.mobile_dataswitch()
-
-    def close_connection(self):
-        self.client.user.logout()
-
-    def check_connection(self):
-        try:
-            self.init_connection()
-            self.close_connection()
-        except LoginErrorUsernamePasswordWrongException:
-            return {'up': False, 'cause': 'password'}
-        except requests.exceptions.ConnectionError:
-            return {'up': False, 'cause': 'network'}
-        return {'up': True}
+class Monitor(object):
 
     def init_net_mode(self):
         self.net_mode = self.client.net.net_mode()
@@ -144,26 +112,5 @@ class HuaweiMain(object):
                 'rsrp': get_signal_int(signal_info['rsrp']),
             }
             return info_dict
-        except LoginErrorUsernamePasswordWrongException:
-            return False
-
-    def toggle_LTE(self):
-        try:
-            self.init_connection()
-            if self.dialup_status == 0:
-                self.close_connection()
-                return self.client.dial_up.set_mobile_dataswitch(1)
-            else:
-                self.close_connection()
-                return self.client.dial_up.set_mobile_dataswitch(0)
-
-        except LoginErrorUsernamePasswordWrongException:
-            return False
-
-    def reboot_modem(self):
-        try:
-            self.init_connection()
-            self.client.device.control(1)
-            self.close_connection()
         except LoginErrorUsernamePasswordWrongException:
             return False

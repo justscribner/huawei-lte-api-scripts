@@ -1,0 +1,8 @@
+huawei_lte_api
+os
+smtplib
+json
+time
+gettext
+dotenv
+requests
